@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- SISTEMA DE USUARIOS ---
+model User {
+  id               String         @id @default(uuid())
+  discordId        String         @unique
+  username         String
+  avatar           String?
+  
+  // Relación con el trabajo/rol actual
+  jobRoleId        String?
+  jobRole          JobRole?       @relation(fields: [jobRoleId], references: [id])
+  
+  identityCard     IdentityCard?
+  bankAccount      BankAccount?
+  
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+// --- SISTEMA DE INSTITUCIONES Y ROLES (NUEVO) ---
+model Institution {
+  id          String    @id @default(uuid())
+  name        String    @unique // Ej: "Carabineros de Chile", "SAMU"
+  roles       JobRole[]
+  createdAt   DateTime  @default(now())
+}
+
+model JobRole {
+  id            String      @id @default(uuid())
+  name          String      // Ej: "General Director", "Paramédico"
+  salary        Float       // Sueldo a pagar por payday/turno
+  institutionId String
+  institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  users         User[]
+}
+
+// --- SISTEMA DE ANUNCIOS (NUEVO) ---
+model Announcement {
+  id          String   @id @default(uuid())
+  title       String
+  content     String
+  isGlobal    Boolean  @default(true) // Si es para todos los ciudadanos
+  createdAt   DateTime @default(now())
+}
+
+// (Aquí se mantienen IdentityCard, BankAccount, Transaction y AdminAccessCode del mensaje anterior)
